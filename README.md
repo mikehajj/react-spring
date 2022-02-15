@@ -94,5 +94,20 @@ SECRET_ENV_NGING_CERTs=nginx-certs
 - KUBENS: the namespace to use on k8s to deploy in
 - KUBECONFIG: an encode version of the k8s account service configuration file that is used by the pipeline to deploy on k8s
 
+### Environment Variables Configuration
+Environment Variables are configured using the bitbucket interface under **repository settings**.
+
+These variables are classified under 2 categories: global - environment.
+
+#### Global ENV Variables
+These variables do not change no matter which environment is running.
+![Global Env Vars](./k8s/diagrams/global-env-vars.png)
+*(example taken from www.jamalouki.net cicde pipeline, similar to this assignment)*
+
+#### Environment ENV Variables
+These variables are different in each environment that is running.
+![Environment Env Vars](./k8s/diagrams/environment-env-vars.png)
+*(example taken from www.jamalouki.net cicde pipeline, similar to this assignment)*
+
 ## Examples
 Please refer to the examples under folder **k8s/artifacts** to see how the generated k8s recipes look like.
