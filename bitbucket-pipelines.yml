@@ -5,6 +5,38 @@
 # You can specify a custom docker image from Docker Hub as your build environment.
 
 pipelines:
+  pull-requests:
+    feature/*:
+      - step:
+          name: Merge to Develop
+          script:
+            - git fetch
+            - git checkout -b develop || git checkout develop
+            - git merge $BITBUCKET_BRANCH
+            - git push -v --tags origin develop:develop
+            - git push origin --delete $BITBUCKET_BRANCH
+  branches:
+    develop:
+      - step:
+          image: ubuntu-latest
+          name: Run Unit Tests
+          script:
+            - ./mvnw clean verify
+            - mvn test
+      - step:
+          image: ubuntu-latest
+          name: Run Integration Tests
+          script:
+            - mvn test -Pintegration-testing
+      - step:
+          image: ubuntu-latest
+          name: Run Performance Tests
+          script:
+            - java -jar target/spring-pipeline-demo.jar > /dev/null &
+              # Wait for the spring boot application to boot
+            - sleep 20
+            - mvn -q jmeter:jmeter
+            - mvn jmeter:results
   tags:
     '*':
       - parallel:
