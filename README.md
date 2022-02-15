@@ -4,13 +4,16 @@ The following repository contains the CI/CD instructions to test and deploys a r
 
 ## Content
 The content of this repository is divided into several locations as follow:
-- k8s: this folder contains 2 directories one for frontend deployment and another for backend deployment.
-- k8s/BE: this folder contains the dockerfile, the startup script for the backend deployment and the nginx virtual host entry that upstreams to the spring boot running instance.
-- k8s/FE: this folder contains the dockerfile, the startup script for the frontend deployment and the nginx virtual host entry that redirects the user to the generated react dist folder.
-- k8s/kube: this folder contains the k8s templates and a NodeJS script that uses ENV variables to generate the k8s deployment & service for each of the frontend or backend depending on the stage that invokes it.
-- k8s/artifacts: this folder contains a copy of the generated k8s recipes for each of Frontend and Backend after the entire pipeline finishes.
-- k8s/diagrams: this folder contains the blueprints and some high level overview of the application architecture, the pipeline stages and workflow, and the deployment overview on the k8s cluster.
-- bitbucket-pipeline.yml: this file contains the ci/cd pipeline instructions.
+
+| File Path | Description |
+| --- | ---|
+| k8s| this folder contains 2 directories one for frontend deployment and another for backend deployment. |
+| k8s/BE | this folder contains the dockerfile, the startup script for the backend deployment and the nginx virtual host entry that upstreams to the spring boot running instance. |
+| k8s/FE | this folder contains the dockerfile, the startup script for the frontend deployment and the nginx virtual host entry that redirects the user to the generated react dist folder. |
+| k8s/kube | this folder contains the k8s templates and a NodeJS script that uses ENV variables to generate the k8s deployment & service for each of the frontend or backend depending on the stage that invokes it. |
+| k8s/artifacts | this folder contains a copy of the generated k8s recipes for each of Frontend and Backend after the entire pipeline finishes. |
+| k8s/diagrams | this folder contains the blueprints and some high level overview of the application architecture, the pipeline stages and workflow, and the deployment overview on the k8s cluster. |
+| bitbucket-pipeline.yml | this file contains the ci/cd pipeline instructions. |
 
 ## Architecture
 
@@ -59,40 +62,38 @@ The pipeline is generic and does not impose the usage of a specific cloud provid
 ## Environment Variables
 Both docker images get generated in parallel and pushed to a remote docker registry.
 During this stage, the pipeline builds the images using additional env variables:
-- DOCKER_HUB_USER: the username on the remote docker registry 
-- DOCKER_HUB_REPO: the name of the image to generate
-- BITBUCKET_TAG: the tag of the image to generate matching the auto generated tag number on bitbucket
-- REACT_APP_ENV_VARS: the location of the backend api endpoint entry point that the frontend react application will connect to
+
+| Env Var | Description |
+| --- | ---|
+| DOCKER_HUB_USER | the username on the remote docker registry | 
+| DOCKER_HUB_REPO | the name of the image to generate |
+| BITBUCKET_TAG | the tag of the image to generate matching the auto generated tag number on bitbucket |
+| REACT_APP_ENV_VARS | the location of the backend api endpoint entry point that the frontend react application will connect to |
 
 Once the Docker images are created, the pipeline executes a NodeJs script located in k8s/kube/kube.js.
 This NodeJs script generates the kubernetes YAML recipes that instructs kubernetes the type of deployment to create and what to attach to it.
 This Script also utilize multiple environment variable supplied by the bitbucket pipeline:
-- DOCKER_HUB_USER: the username on the remote docker registry
-- DOCKER_HUB_REPO: the name of the image to generate
-- BITBUCKET_TAG: the tag of the image to generate matching the auto generated tag number on bitbucket
-- BITBUCKET_COMMIT: auto generated commit message used as env variable in the k8s deployment recipe to force a redeployment
-- DEPLOYMENT_NAME_SUFFIX: an optional prefix to use with the deployment names
-- DEPLOYMENT_REPLICAS: the initial number of replicas to use
-- READINESS_PROBE_PORT: the readiness probe port to use
-- READINESS_PROBE_PATH: the readiness probe path to use
-- AUTOSCALE_CPU_LIMIT: the autoscale unit metric that the k8s HPA checks
-- DOCKER_IMAGE_PULL_POLICY: the docker image pull policy
-- DOCKER_PRIVATE_REGISTRY: the docker registry secret to use if the registry is private
-- STARTUP_CMD: the location of the startup command that executes when the pods of the deployment launch
-- DYNAMIC_EXTERNAL_PORTS: a stringified JSON configuration instructing the configuration of how the exposed ports of the attached service should happen
-- PORT_TYPE: the type of port exposure to use with the service like: LoadBalancer, NodePort ...
-- CUSTOM_XXX: optional list of custom env variables related to the internal logic of the application.
-```shell
-# Example:
-CUSTOM_FOO=bar
-```
-- SECRET_ENV_XXX: optional list of custom k8s secret names that should attach to this deployment.
-```shell
-# Example:
-SECRET_ENV_NGING_CERTs=nginx-certs
-```
-- KUBENS: the namespace to use on k8s to deploy in
-- KUBECONFIG: an encode version of the k8s account service configuration file that is used by the pipeline to deploy on k8s
+
+| Env Var | Description |
+| --- | ---|
+| DOCKER_HUB_USER | the username on the remote docker registry |
+| DOCKER_HUB_REPO | the name of the image to generate |
+| BITBUCKET_TAG | the tag of the image to generate matching the auto generated tag number on bitbucket |
+| BITBUCKET_COMMIT | auto generated commit message used as env variable in the k8s deployment recipe to force a redeployment |
+| DEPLOYMENT_NAME_SUFFIX | an optional prefix to use with the deployment names |
+| DEPLOYMENT_REPLICAS | the initial number of replicas to use |
+| READINESS_PROBE_PORT | the readiness probe port to use |
+| READINESS_PROBE_PATH | the readiness probe path to use |
+| AUTOSCALE_CPU_LIMIT | the autoscale unit metric that the k8s HPA checks |
+| DOCKER_IMAGE_PULL_POLICY | the docker image pull policy |
+| DOCKER_PRIVATE_REGISTRY | the docker registry secret to use if the registry is private |
+| STARTUP_CMD | the location of the startup command that executes when the pods of the deployment launch |
+| DYNAMIC_EXTERNAL_PORTS | a stringified JSON configuration instructing the configuration of how the exposed ports of the attached service should happen |
+| PORT_TYPE | the type of port exposure to use with the service like | LoadBalancer, NodePort ... |
+| CUSTOM_XXX | optional list of custom env variables related to the internal logic of the application. |
+| SECRET_ENV_XXX | optional list of custom k8s secret names that should attach to this deployment. |
+| KUBENS | the namespace to use on k8s to deploy in
+| KUBECONFIG | an encode version of the k8s account service configuration file that is used by the pipeline to deploy on k8s
 
 ### Environment Variables Configuration
 Environment Variables are configured using the bitbucket interface under **repository settings**.
