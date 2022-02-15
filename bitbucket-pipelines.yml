@@ -1,0 +1,84 @@
+# This is a sample build configuration for PHP.
+# Check our guides at https://confluence.atlassian.com/x/e8YWN for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+
+pipelines:
+  tags:
+    '*':
+      - parallel:
+        - step:
+            size: 2x
+            name: Building Backend
+            script:
+              - apt-get update && apt-get install -y unzip git
+              - mv k8s/BE/Dockerfile .
+              - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO-frontend:v$BITBUCKET_TAG .
+              - docker push $DOCKER_HUB_USER/$DOCKER_HUB_REPO-frontend:v$BITBUCKET_TAG
+            services:
+              - docker
+        - step:
+            size: 2x
+            name: Building Frontend
+            script:
+              - mv k8s/FE/Dockerfile .
+              - echo $REACT_APP_ENV_VARS > .env
+              - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO-backoffice:v$BITBUCKET_TAG .
+              - docker push $DOCKER_HUB_USER/$DOCKER_HUB_REPO-backoffice:v$BITBUCKET_TAG
+            services:
+              - docker
+      - parallel:
+        - step:
+            name: Generating K8s Recipes for Backend
+            deployment: frontend
+            image: node:14.4.0
+            script:
+              - env
+              - npm install json2yaml
+              - node ./k8s/kube/kube.js
+              - ls -la
+              - mv deployment.yml backend-deployment.yml
+              - mv external-service.yml backend-service.yml
+            artifacts:
+              - backend-service.yml
+              - backend-deployment.yml
+        - step:
+            name: Generating K8s Recipes for Frontend
+            deployment: backoffice
+            image: node:14.4.0
+            script:
+              - env
+              - npm install json2yaml
+              - node ./k8s/kube/kube.js
+              - ls -la
+              - mv deployment.yml frontend-deployment.yml
+              - mv external-service.yml frontend-service.yml
+            artifacts:
+              - frontend-service.yml
+              - frontend-deployment.yml
+      - parallel:
+        - step:
+            deployment: backend-deployment
+            name: Deploying Backend
+            image: atlassian/pipelines-kubectl
+            trigger: manual
+            script:
+              - echo $KUBECONFIG | base64 -d > kubeconfig.yml
+              - ls -la
+              - echo "Creating new Deployment in namespace $KUBENS"
+              - kubectl --kubeconfig=kubeconfig.yml apply -f ./backend-deployment.yml -n $KUBENS
+              - echo "Attaching Service to new Deployment in namespace $KUBENS"
+              - kubectl --kubeconfig=kubeconfig.yml apply -f ./backend-service.yml -n $KUBENS
+        - step:
+            deployment: frontend-deployment
+            name: Deploying Frontend
+            image: atlassian/pipelines-kubectl
+            trigger: manual
+            script:
+              - echo $KUBECONFIG | base64 -d > kubeconfig.yml
+              - ls -la
+              - echo "Creating new Deployment in namespace $KUBENS"
+              - kubectl --kubeconfig=kubeconfig.yml apply -f ./frontend-deployment.yml -n $KUBENS
+              - echo "Attaching Service to new Deployment in namespace $KUBENS"
+              - kubectl --kubeconfig=kubeconfig.yml apply -f ./frontend-service.yml -n $KUBENS
