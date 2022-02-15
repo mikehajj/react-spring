@@ -63,7 +63,7 @@ pipelines:
       - parallel:
         - step:
             name: Generating K8s Recipes for Backend
-            deployment: frontend
+            deployment: backend-recipes
             image: node:14.4.0
             script:
               - env
@@ -77,7 +77,7 @@ pipelines:
               - backend-deployment.yml
         - step:
             name: Generating K8s Recipes for Frontend
-            deployment: backoffice
+            deployment: frontend-recipes
             image: node:14.4.0
             script:
               - env
