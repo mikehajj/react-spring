@@ -1,0 +1,53 @@
+---
+  apiVersion: "apps/v1"
+  kind: "Deployment"
+  metadata: 
+    name: "deployment-spring"
+    labels: 
+      app: "spring"
+  spec: 
+    replicas: 1
+    selector: 
+      matchLabels: 
+        app: "spring"
+    strategy: 
+      type: "RollingUpdate"
+    template: 
+      metadata: 
+        labels: 
+          app: "spring"
+      spec: 
+        restartPolicy: "Always"
+        containers:
+          - 
+            name: "pod-spring"
+            image: "mikehajj/spring:v1.0.0"
+            imagePullPolicy: "Always"
+            readinessProbe: 
+              initialDelaySeconds: 5
+              timeoutSeconds: 2
+              periodSeconds: 5
+              successThreshold: 1
+              failureThreshold: 3
+              httpGet: 
+                port: 80
+                path: "/"
+            resources: 
+              limits: 
+                cpu: "500m"
+            command: 
+              - "bash"
+            args: 
+              - "-c"
+              - "/opt/reactapp/k8s/BE/script/start.sh"
+            env:
+              - 
+                name: "APP_ENV"
+                value: "prod"
+                name: "COMMIT"
+                value: "3faf6381555966721a75167da8c33fca029a4be7"
+            ports: 
+              - 
+                containerPort: 80
+              - 
+                containerPort: 443

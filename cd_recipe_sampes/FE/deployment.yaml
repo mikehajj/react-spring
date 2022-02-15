@@ -1,0 +1,54 @@
+---
+  apiVersion: "apps/v1"
+  kind: "Deployment"
+  metadata: 
+    name: "deployment-react"
+    labels: 
+      app: "react"
+  spec: 
+    replicas: 1
+    selector: 
+      matchLabels: 
+        app: "react"
+    strategy: 
+      type: "RollingUpdate"
+    template: 
+      metadata: 
+        labels: 
+          app: "react"
+      spec: 
+        restartPolicy: "Always"
+        containers:
+          - 
+            name: "pod-react"
+            image: "mikehajj/react:v1.0.0"
+            imagePullPolicy: "Always"
+            readinessProbe: 
+              initialDelaySeconds: 5
+              timeoutSeconds: 2
+              periodSeconds: 5
+              successThreshold: 1
+              failureThreshold: 3
+              httpGet: 
+                port: 80
+                path: "/"
+            resources: 
+              limits: 
+                cpu: "500m"
+            command: 
+              - "bash"
+            args: 
+              - "-c"
+              - "/opt/reactapp/k8s/FE/script/start.sh"
+            env:
+              - 
+                name: "APP_ENV"
+                value: "prod"
+              -
+                name: "COMMIT"
+                value: "3faf6381555966721a75167da8c33fca029a4be7"
+            ports: 
+              - 
+                containerPort: 80
+              - 
+                containerPort: 443
