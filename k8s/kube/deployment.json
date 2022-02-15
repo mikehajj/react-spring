@@ -1,0 +1,63 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "deployment-$DOCKER_HUB_REPO",
+    "labels": {
+      "app": "$DOCKER_HUB_REPO"
+    }
+  },
+  "spec": {
+    "replicas": "$DEPLOYMENT_REPLICAS",
+    "selector": {
+      "matchLabels": {
+        "app": "$DOCKER_HUB_REPO"
+      }
+    },
+    "strategy": {
+      "type": "RollingUpdate",
+      "rollingUpdate": {
+        "maxSurge": 2,
+        "maxUnavailable": 1
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "$DOCKER_HUB_REPO"
+        }
+      },
+      "spec": {
+        "restartPolicy": "Always",
+        "containers": [
+          {
+            "name": "pod-$DOCKER_HUB_REPO",
+            "image": "$DOCKER_HUB_USER/$DOCKER_HUB_REPO:v$BITBUCKET_TAG",
+            "imagePullPolicy": "IfNotPresent",
+            "securityContext": {
+              "privileged": true,
+              "capabilities": {
+                "add": [
+                  "SYS_ADMIN"
+                ]
+              }
+            },
+            "readinessProbe": {
+              "initialDelaySeconds": 5,
+              "timeoutSeconds": 7,
+              "periodSeconds": 7,
+              "successThreshold": 1,
+              "failureThreshold": 5
+            },
+            "command": [
+              "bash"
+            ],
+            "args": [
+              "-c"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
