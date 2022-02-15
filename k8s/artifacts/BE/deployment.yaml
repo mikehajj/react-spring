@@ -2,26 +2,26 @@
   apiVersion: "apps/v1"
   kind: "Deployment"
   metadata: 
-    name: "deployment-react"
+    name: "deployment-spring"
     labels: 
-      app: "react"
+      app: "spring"
   spec: 
-    replicas: 1
+    replicas: 3
     selector: 
       matchLabels: 
-        app: "react"
+        app: "spring"
     strategy: 
       type: "RollingUpdate"
     template: 
       metadata: 
         labels: 
-          app: "react"
+          app: "spring"
       spec: 
         restartPolicy: "Always"
         containers:
           - 
-            name: "pod-react"
-            image: "mikehajj/react:v1.0.0"
+            name: "pod-spring"
+            image: "mikehajj/spring:v1.0.0"
             imagePullPolicy: "Always"
             readinessProbe: 
               initialDelaySeconds: 5
@@ -39,12 +39,11 @@
               - "bash"
             args: 
               - "-c"
-              - "/opt/reactapp/k8s/FE/script/start.sh"
+              - "/opt/reactapp/k8s/BE/script/start.sh"
             env:
               - 
                 name: "APP_ENV"
                 value: "prod"
-              -
                 name: "COMMIT"
                 value: "3faf6381555966721a75167da8c33fca029a4be7"
             ports: 
