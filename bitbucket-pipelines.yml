@@ -37,32 +37,6 @@ pipelines:
             - sleep 20
             - mvn -q jmeter:jmeter
             - mvn jmeter:results
-    infrastructure:
-      - step:
-          image: node:14.4.0
-          name: Prepare terraform scripts
-          script:
-            - node ./tf/run.js $LINODE_API_TOKEN $KUBENS
-      - step:
-          image: hashicorp/terraform:full
-          name: Provision k8s on Terraform
-          script:
-            - cd tf && ./provision.sh
-          artifacts:
-            - kubeconfig.yml
-            - terraform.tfstate
-      - step:
-          image: atlassian/pipelines-kubectl
-          name: Verify k8s cluster & create Namespace to use later on
-          script:
-            - kubectl --kubeconfig=kubeconfig.yml get nodes
-            - kubectl --kubeconfig=kubeconfig.yml create ns $KUBENS
-      - step:
-          trigger: manual
-          image: hashicorp/terraform:full
-          name: Destroy the k8s cluster using Terraform
-          script:
-            - cd tf && ./destroy.sh
   tags:
     '*':
       - parallel:
@@ -115,6 +89,34 @@ pipelines:
             artifacts:
               - frontend-service.yml
               - frontend-deployment.yml
+        - step:
+            image: node:14.4.0
+            name: Prepare terraform scripts
+            script:
+              - node ./tf/run.js $LINODE_API_TOKEN $KUBENS
+              - cd tf && cp tf/create-rbac.yaml ../create-rbac.yaml
+              - cd tf && cp tf/terraform.tfvars ../terraform.tfvars
+            artifacts:
+              - create-rbac.yaml
+              - terraform.tfvars
+      - step:
+          image: hashicorp/terraform:full
+          name: Provision k8s on Terraform
+          script:
+            - cp terraform.tfvars tf/terraform.tfvars
+            - cd tf && ./provision.sh
+          artifacts:
+            - kubeconfig.yml
+            - terraform.tfstate
+      - step:
+          image: atlassian/pipelines-kubectl
+          name: Verify k8s cluster & create Namespace to use later on & rbac configuration
+          script:
+            - kubectl --kubeconfig=kubeconfig.yml get nodes
+            - kubectl --kubeconfig=kubeconfig.yml create ns $KUBENS
+            - kubectl --kubeconfig=kubeconfig.yml get ns
+            - kubectl --kubeconfig=kubeconfig.yml apply -f create-rbac.yaml -n $KUBENS
+            - kubectl --kubeconfig=kubeconfig.yml get serviceaccounts -n $KUBENS
       - parallel:
         - step:
             deployment: backend-deployment
@@ -122,8 +124,6 @@ pipelines:
             image: atlassian/pipelines-kubectl
             trigger: manual
             script:
-              - echo $KUBECONFIG | base64 -d > kubeconfig.yml
-              - ls -la
               - echo "Creating new Deployment in namespace $KUBENS"
               - kubectl --kubeconfig=kubeconfig.yml apply -f ./backend-deployment.yml -n $KUBENS
               - echo "Attaching Service to new Deployment in namespace $KUBENS"
@@ -134,9 +134,13 @@ pipelines:
             image: atlassian/pipelines-kubectl
             trigger: manual
             script:
-              - echo $KUBECONFIG | base64 -d > kubeconfig.yml
-              - ls -la
               - echo "Creating new Deployment in namespace $KUBENS"
               - kubectl --kubeconfig=kubeconfig.yml apply -f ./frontend-deployment.yml -n $KUBENS
               - echo "Attaching Service to new Deployment in namespace $KUBENS"
               - kubectl --kubeconfig=kubeconfig.yml apply -f ./frontend-service.yml -n $KUBENS
+      - step:
+          trigger: manual
+          image: hashicorp/terraform:full
+          name: Destroy the k8s cluster using Terraform
+          script:
+            - cd tf && ./destroy.sh

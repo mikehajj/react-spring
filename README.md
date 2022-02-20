@@ -93,7 +93,7 @@ This Script also utilize multiple environment variable supplied by the bitbucket
 | CUSTOM_XXX | optional list of custom env variables related to the internal logic of the application. |
 | SECRET_ENV_XXX | optional list of custom k8s secret names that should attach to this deployment. |
 | KUBENS | the namespace to use on k8s to deploy in
-| KUBECONFIG | an encode version of the k8s account service configuration file that is used by the pipeline to deploy on k8s
+| LINODE_API_TOKEN | The Linode Service Account API Token to allow Terraform to connect to linode to provision the k8s cluster
 
 ### Environment Variables Configuration
 Environment Variables are configured using the bitbucket interface under **repository settings**.

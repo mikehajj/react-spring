@@ -52,7 +52,7 @@ const k8s_linode_template_generator = {
 				return cb( error );
 			}
 			
-			data = data.replace( '%K8S_NAMESPACE%', k8s_namespace_value );
+			data = data.replace( /%K8S_NAMESPACE%/g, k8s_namespace_value );
 			fs.writeFile( rbacOutput, data, { encoding: 'utf8' }, ( error ) => {
 				if ( error ) {
 					return cb( error );
@@ -66,12 +66,12 @@ const k8s_linode_template_generator = {
 
 k8s_linode_template_generator.prepareTFVariablesFile( ( error ) => {
 	if ( error ) {
-		throw error;
+		throw error.message;
 	}
 	
 	k8s_linode_template_generator.prepareRBACK8sFile( ( error ) => {
 		if ( error ) {
-			throw error;
+			throw error.message;
 		}
 	} );
 } );

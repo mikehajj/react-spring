@@ -4,4 +4,4 @@
 terraform plan -destroy
 
 # remove provision infra
-terraform destroy
+terraform destroy -auto-approve

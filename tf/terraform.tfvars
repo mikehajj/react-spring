@@ -3,8 +3,8 @@ k8s_version = "1.22"
 region = "us-east"
 pools = [
   {
-    count : 3
-    type : "g6-standard-2"
+    count : 2
+    type : "g6-standard-1"
   }
 ]
-token = "mike"
+token = "4de5cc7bc9fc74968d1460287989b18a95b9aba7099fe4b490f00ba32f954190"
