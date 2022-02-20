@@ -45,8 +45,15 @@ The following image visualize from a bird-eye view how the ci/cd pipeline is con
 
 - When the develop branch is updated ( either by developers directly or via the first pipeline ), the pipeline in this case runs the tests: unit - integration - performance.
 
-- When the developers tag a new version, the pipeline builds the docker images, pushes them to the docker registry, generate the k8s deployment recipes, connects to the k8s clusters and deploys/updates the components.
-
+- When the developers tag a new version, the pipeline:
+  - builds the docker images 
+  - pushes them to the docker registry 
+  - generate the k8s deployment recipes 
+  - Using Terraform, provisions a new k8s cluster on Linode
+  - Creates a new Namespace on the k8s cluster
+  - Creates 2 service accounts on the k8s cluster: react - spring
+  - connects to the k8s clusters and deploys/updates the components
+  - provides a final step with manual trigger to destroy the k8s cluster on linode
 
 ## Pipeline Overview
 
