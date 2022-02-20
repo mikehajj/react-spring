@@ -13,6 +13,7 @@ The content of this repository is divided into several locations as follow:
 | k8s/kube | this folder contains the k8s templates and a NodeJS script that uses ENV variables to generate the k8s deployment & service for each of the frontend or backend depending on the stage that invokes it. |
 | k8s/artifacts | this folder contains a copy of the generated k8s recipes for each of Frontend and Backend after the entire pipeline finishes. |
 | k8s/diagrams | this folder contains the blueprints and some high level overview of the application architecture, the pipeline stages and workflow, and the deployment overview on the k8s cluster. |
+| tf | this folder contains the IaC templates & recipes that allows terraform to provision a new k8s cluster on a linode account.
 | bitbucket-pipeline.yml | this file contains the ci/cd pipeline instructions. |
 
 ## Architecture
