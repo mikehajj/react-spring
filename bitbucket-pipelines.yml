@@ -8,6 +8,7 @@ pipelines:
   pull-requests:
     feature/*:
       - step:
+          # auto merge pull request to develop branch
           name: Merge to Develop
           script:
             - git fetch
@@ -44,6 +45,7 @@ pipelines:
             size: 2x
             name: Building Backend
             script:
+              # build a new docker image for the spring application and push it to remote docker registry
               - apt-get update && apt-get install -y unzip git
               - mv k8s/BE/Dockerfile .
               - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO-frontend:v$BITBUCKET_TAG .
@@ -54,6 +56,7 @@ pipelines:
             size: 2x
             name: Building Frontend
             script:
+              # build a new docker image for the react application and push it to remote docker registry
               - mv k8s/FE/Dockerfile .
               - echo $REACT_APP_ENV_VARS > .env
               - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO-backoffice:v$BITBUCKET_TAG .
@@ -66,7 +69,8 @@ pipelines:
             deployment: backend-recipes
             image: node:14.4.0
             script:
-              - env
+              # trigger custom nodejs script that builds the k8s deployment recipes from templates and env variables
+              # for the backend spring application
               - npm install json2yaml
               - node ./k8s/kube/kube.js
               - ls -la
@@ -80,7 +84,8 @@ pipelines:
             deployment: frontend-recipes
             image: node:14.4.0
             script:
-              - env
+              # trigger custom nodejs script that builds the k8s deployment recipes from templates and env variables
+              # for the frontend react application
               - npm install json2yaml
               - node ./k8s/kube/kube.js
               - ls -la
@@ -93,6 +98,7 @@ pipelines:
             image: node:14.4.0
             name: Prepare terraform scripts
             script:
+              # trigger custom nodejs script that builds terraform recipes and k8s rbac configuration files
               - node ./tf/run.js $LINODE_API_TOKEN $KUBENS
               - cd tf && cp tf/create-rbac.yaml ../create-rbac.yaml
               - cd tf && cp tf/terraform.tfvars ../terraform.tfvars
@@ -103,6 +109,7 @@ pipelines:
           image: hashicorp/terraform:full
           name: Provision k8s on Terraform
           script:
+            # use terraform to provision a new k8s cluster on linode using the recipe created in previous step
             - cp terraform.tfvars tf/terraform.tfvars
             - cd tf && ./provision.sh
           artifacts:
@@ -112,6 +119,8 @@ pipelines:
           image: atlassian/pipelines-kubectl
           name: Verify k8s cluster & create Namespace to use later on & rbac configuration
           script:
+            # once k8s cluster is created check that it is ready and create a new Namespace
+            # then setup the RBAC configuration for the backend and for the frontend using service accounts and roles
             - kubectl --kubeconfig=kubeconfig.yml get nodes
             - kubectl --kubeconfig=kubeconfig.yml create ns $KUBENS
             - kubectl --kubeconfig=kubeconfig.yml get ns
@@ -124,6 +133,8 @@ pipelines:
             image: atlassian/pipelines-kubectl
             trigger: manual
             script:
+              # deploy the backend spring app as replicated deployment with an exposed service on k8s
+              # this step requires a manual trigger
               - echo "Creating new Deployment in namespace $KUBENS"
               - kubectl --kubeconfig=kubeconfig.yml apply -f ./backend-deployment.yml -n $KUBENS
               - echo "Attaching Service to new Deployment in namespace $KUBENS"
@@ -134,13 +145,16 @@ pipelines:
             image: atlassian/pipelines-kubectl
             trigger: manual
             script:
+              # deploy the frontend react app as replicated deployment with an exposed service on k8s
+              # this step requires a manual trigger
               - echo "Creating new Deployment in namespace $KUBENS"
               - kubectl --kubeconfig=kubeconfig.yml apply -f ./frontend-deployment.yml -n $KUBENS
               - echo "Attaching Service to new Deployment in namespace $KUBENS"
               - kubectl --kubeconfig=kubeconfig.yml apply -f ./frontend-service.yml -n $KUBENS
       - step:
-          trigger: manual
           image: hashicorp/terraform:full
           name: Destroy the k8s cluster using Terraform
+          trigger: manual
           script:
+            # final step that requires manual trigger to clean up the k8s cluster using terraform
             - cd tf && ./destroy.sh
