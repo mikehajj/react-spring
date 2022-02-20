@@ -61,10 +61,10 @@ The pipeline has several entry points:
 
 - Automatically merge feature branches to the develop branch when pull requests are created
 - Trigger testing the application by running unit/integration/performance tests each time the develop branch is updated
-- Upon tagging a repository, build 2 docker images and deploy 2 replicated k8s deployments from these images: Backend and Frontend Deployments
+- Upon tagging a repository, build 2 docker images, provisions a new k8s cluster, and deploys 2 replicated k8s deployments from these images: Backend and Frontend Deployments
 
-This pipeline assumes that you have already configured the environment variables ( listed below ) that it requires to executed and that you have already provisioned a k8s cluster with a namespace.
-The pipeline is generic and does not impose the usage of a specific cloud provider, it works with any docker registry and deploys on any kubernetes cluster.
+This pipeline assumes that you have already configured the environment variables ( listed below ) that it requires to execute
+The pipeline is generic but imposes the usage of linode as a cloud provider to provision the k8s cluster. However, it works with any docker registry.
 
 ## Environment Variables
 Both docker images get generated in parallel and pushed to a remote docker registry.
