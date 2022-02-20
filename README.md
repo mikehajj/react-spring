@@ -21,6 +21,7 @@ The content of this repository is divided into several locations as follow:
 #### Application Overview:
 The following image visualize from a bird-eye view how the application is structure and how it is running on the hosting platform:
 ![Application Overview](./k8s/diagrams/app-overview.png)
+
 The code in the repository is divided into 2 different components where one handles the frontend and the other handles the backend.
 
 Each deployment is accessible via a Nginx web server.

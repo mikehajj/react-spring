@@ -1,5 +1,5 @@
 FROM mikehajj/faster-ubuntu
-MAINTAINER Mike Hajj <mike.hajj@spread-content.com>
+MAINTAINER Mike Hajj <mike.hajj@gmail.com>
 
 RUN echo "Updating the list of repositories ..."
 RUN apt-get update
