@@ -135,10 +135,14 @@ pipelines:
             script:
               # deploy the backend spring app as replicated deployment with an exposed service on k8s
               # this step requires a manual trigger
+              - echo "Creating new Secret in namespace $KUBENS"
+              - kubectl --kubeconfig=kubeconfig.yml create generic secret "mysql_credentials" --from-file=./k8s/artifacts/BE/mysql_credentials.yml -n $KUBENS
               - echo "Creating new Deployment in namespace $KUBENS"
               - kubectl --kubeconfig=kubeconfig.yml apply -f ./backend-deployment.yml -n $KUBENS
               - echo "Attaching Service to new Deployment in namespace $KUBENS"
               - kubectl --kubeconfig=kubeconfig.yml apply -f ./backend-service.yml -n $KUBENS
+              # deploy the backend spring horizontal pod autoscaler HPA that monitors to the cpu usage and deployes additional replicas if needed
+              - kubectl --kubeconfig=kubeconfig.yml autoscale deployment deployment-$DOCKER_HUB_REPO --cpu-percent=$AUTOSCALE_CPU_PERCENT --min=$DEPLOYMENT_REPLICAS --max=$AUTOSCALE_MAX_POD -n $KUBENS
         - step:
             deployment: frontend-deployment
             name: Deploying Frontend
