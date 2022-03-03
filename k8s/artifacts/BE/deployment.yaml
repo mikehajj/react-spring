@@ -44,8 +44,15 @@
               - 
                 name: "APP_ENV"
                 value: "prod"
+              -
                 name: "COMMIT"
                 value: "3faf6381555966721a75167da8c33fca029a4be7"
+              -
+                name: "MYSQL_CREDENTIALS"
+                valueFrom:
+                  secretKeyRef:
+                    name: "mysql_credentials"
+                    key: "mysql_credentials"
             ports: 
               - 
                 containerPort: 80
