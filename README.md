@@ -19,7 +19,7 @@ The content of this repository is divided into several locations as follow:
 
 ## Application Overview
 The following image visualize from a bird-eye view how the application is structure and how it is running on the hosting platform:
-![Application Overview](./k8s/diagrams/app-overview.png)
+![Application Overview](./k8s/diagrams/app-db-overview.png)
 
 The code in the repository is divided into 2 different components where one handles the frontend and the other handles the backend.
 
@@ -68,7 +68,7 @@ Requests hit the service, the latter redirects to the deployment, and the deploy
 
 ## Pipeline Overview
 The following image visualize from a bird-eye view how the ci/cd pipeline is configured and its workflow:
-![Pipeline Overview](./k8s/diagrams/pipeline-overview.png)
+![Pipeline Overview](./k8s/diagrams/pipeline-full-overview.png)
 
 - When developers push a feature branch, the pipeline automatically merges that branch to the develop branch.
 
